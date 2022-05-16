@@ -20,6 +20,8 @@ function getCountryParams (stream: fs.ReadStream) {
             continue
         if (compareChunkToString(chunk, '\n'))
             break
+        if (compareChunkToString(chunk, '-'))
+            throw new Error('Values cannot be negative')
         if(Number.isInteger(+chunk))
             params.push(+chunk)
       }
