@@ -3,6 +3,14 @@ import { areInBounds, findCityByCoordinates } from '../utils';
 import { Grid, MapType } from '../types';
 import Country from './Country';
 
+enum Direction {
+    East,
+    West,
+    North,
+    South,
+}
+
+
 export default class Map implements MapType {
     cities: City[];
     countries: Country[];
@@ -26,35 +34,32 @@ export default class Map implements MapType {
     buildNeighbours () {
         this.cities.map((city) => {
             const {x, y} = city;
-            if(this.westernCityExists(x, y)) 
+            if(this.neighbourCityExists(x, y, Direction.West)) 
                 city.addNeighbour(findCityByCoordinates(this.cities, x - 1, y));
-            if(this.easternCityExists(x, y)) 
+            if(this.neighbourCityExists(x, y, Direction.East)) 
                 city.addNeighbour(findCityByCoordinates(this.cities, x + 1, y));
-            if(this.northernCityExists(x, y)) 
+            if(this.neighbourCityExists(x, y, Direction.North)) 
                 city.addNeighbour(findCityByCoordinates(this.cities, x, y + 1));
-            if(this.southernCityExists(x, y)) 
+            if(this.neighbourCityExists(x, y, Direction.South)) 
                 city.addNeighbour(findCityByCoordinates(this.cities, x, y - 1));
         })
     }
 
-    westernCityExists (x: number, y: number) {
-        return areInBounds(x, y) && this.grid[x-1][y] != 0
-    }
-    easternCityExists (x: number, y: number) {
-        return areInBounds(x, y) && this.grid[x+1][y] != 0
-    }
-    northernCityExists (x: number, y: number) {
-        return areInBounds(x, y) && this.grid[x][y+1] != 0
-    }
-    southernCityExists (x: number, y: number) {
-        return areInBounds(x, y) && this.grid[x][y-1] != 0
+
+    neighbourCityExists (x: number, y: number, dir: Direction) {
+        switch(dir) {
+            case Direction.West:
+                return areInBounds(x, y) && this.grid[x-1][y] != 0;
+            case Direction.East:
+                return areInBounds(x, y) && this.grid[x+1][y] != 0;
+            case Direction.North:
+                return areInBounds(x, y) && this.grid[x][y+1] != 0;
+            case Direction.South:
+                return areInBounds(x, y) && this.grid[x][y-1] != 0; 
+        }
     }
 
     setInitialBalances () {
-        this.cities.map(city => city.setBalances(this.countries))
-    }
-
-    initializeIncomes () {
         this.cities.map(city => city.setBalances(this.countries))
     }
 
@@ -123,7 +128,6 @@ export default class Map implements MapType {
     }
 
     getDiffusionResult() {
-        const res = this.countries.reduce((acc, country) => Object.assign(acc, {[country.name]: country.judgmentDay}), {});
-        return res;
+        return this.countries.reduce((acc, country) => Object.assign(acc, {[country.name]: country.judgmentDay}), {});
     }
 }

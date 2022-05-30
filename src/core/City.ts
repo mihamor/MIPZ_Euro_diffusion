@@ -64,9 +64,8 @@ export default class City implements CityType {
     }
 
     addNeighbour(city?: City) {
-        if (city !== undefined)
-            if(findCityByCoordinates(this.neighbours, city.x, city.y) === undefined)
-                this.neighbours.push(city)
+        if (city && !findCityByCoordinates(this.neighbours, city.x, city.y))
+            this.neighbours.push(city)
     }
 
     checkReadyStatus(countries: CountryType[]) {

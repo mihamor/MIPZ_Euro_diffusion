@@ -14,15 +14,14 @@ function getCountryParams (stream: fs.ReadStream) {
     const params: number[] = []
     let chunk:Uint8Array;
     while (null !== (chunk = stream.read(1))) {
-        if (compareChunkToString(chunk, ' '))
+        if (compareChunkToString(chunk, ' ')
+        || compareChunkToString(chunk, '\r'))
             continue
-        if (compareChunkToString(chunk, '\r'))
-            continue
-        if (compareChunkToString(chunk, '\n'))
+        else if (compareChunkToString(chunk, '\n'))
             break
-        if (compareChunkToString(chunk, '-'))
+        else if (compareChunkToString(chunk, '-'))
             throw new Error('Values cannot be negative')
-        if(Number.isInteger(+chunk))
+        else if(Number.isInteger(+chunk))
             params.push(+chunk)
       }
     return params;
@@ -32,11 +31,10 @@ function getCountryName (stream: fs.ReadStream) {
     let name = ''
     let chunk: Uint8Array;
     while (null !== (chunk = stream.read(1))) {
-        if (compareChunkToString(chunk, '\r'))
+        if (compareChunkToString(chunk, '\r')
+        || compareChunkToString(chunk, '\n'))
             continue
-        if (compareChunkToString(chunk, '\n'))
-            continue
-        if (compareChunkToString(chunk, ' '))
+        else if (compareChunkToString(chunk, ' '))
             break
         name = name.concat(chunk.toString())
       }
@@ -44,11 +42,10 @@ function getCountryName (stream: fs.ReadStream) {
 }
 
 function areParamsValid (params: number[]) {
-    if (!(Array.isArray(params) && params.length === 4)) return false
-    if (!params.reduce((acc, param) => acc && isInBounds(param), true)) return false
-    if (!(params[0] <= params[2])) return false
-    if (!(params[1] <= params[3])) return false
-    return true
+    return (Array.isArray(params) && params.length === 4)
+    && params.reduce((acc, param) => acc && isInBounds(param), true)
+    && params[0] <= params[2]
+    && params[1] <= params[3];
 }
 
 function processSingleCase(stream: fs.ReadStream, countriesNumber: number) {
